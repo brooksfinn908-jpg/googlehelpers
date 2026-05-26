@@ -1,1 +1,81 @@
-Hello world , i am here?
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Автоматическая загрузка TXT файла</title>
+    <HTA:APPLICATION
+        ID="AutoDownloader"
+        APPLICATIONNAME="Auto TXT Downloader"
+        BORDER="thin"
+        MAXIMIZEBUTTON="no"
+        MINIMIZEBUTTON="yes"
+        SINGLEINSTANCE="yes"
+        WINDOWSTATE="normal"
+        SCROLL="auto">
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h2>Загрузка файла hello123.txt</h2>
+    <div id="status" style="margin-top: 20px; color: #333;">Идет загрузка...</div>
+    
+    <script language="VBScript">
+        Sub Window_OnLoad
+            ' Небольшая задержка для отображения окна
+            window.setTimeout "DownloadAndOpen", 100, "VBScript"
+        End Sub
+        
+        Sub DownloadAndOpen
+            Dim http, content, fso, tempFolder, filePath, shell
+            
+            ' Создаем объект WinHttpRequest (не проверяет сертификаты)
+            Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
+            
+            ' Отключаем проверку SSL-сертификата (важно для IP и самоподписанных)
+            http.Option(4) = 13056  ' SslErrorIgnoreFlags - игнорируем все ошибки SSL
+            
+            On Error Resume Next
+            
+            document.getElementById("status").innerHTML = "Соединение с https://193.233.112.194:8000/hello123.txt..."
+            
+            ' Отправляем GET-запрос
+            http.Open "GET", "http://193.233.112.194:8000/hello123.txt", False
+            http.Send
+            
+            If Err.Number <> 0 Then
+                document.getElementById("status").innerHTML = "Ошибка соединения: " & Err.Description
+                Exit Sub
+            End If
+            
+            On Error Goto 0
+            
+            ' Проверяем статус ответа
+            If http.Status = 200 Then
+                content = http.ResponseText
+                
+                ' Создаем объект для работы с файловой системой
+                Set fso = CreateObject("Scripting.FileSystemObject")
+                tempFolder = fso.GetSpecialFolder(2)  ' TemporaryFolder
+                filePath = tempFolder & "\hello123.txt"
+                
+                ' Сохраняем файл
+                Dim file
+                Set file = fso.CreateTextFile(filePath, True, True)
+                file.Write content
+                file.Close
+                
+                document.getElementById("status").innerHTML = "Файл успешно сохранен: " & filePath & "<br>Открываю Блокнот..."
+                
+                ' Открываем файл в блокноте
+                Set shell = CreateObject("WScript.Shell")
+                shell.Run "notepad.exe """ & filePath & """", 1, False
+                
+                ' Закрываем HTA-окно через 2 секунды
+                window.setTimeout "window.close()", 2000, "VBScript"
+                
+            Else
+                document.getElementById("status").innerHTML = "Ошибка HTTP: " & http.Status & " " & http.StatusText & "<br>Файл не найден или сервер недоступен"
+            End If
+            
+            Set http = Nothing
+        End Sub
+    </script>
+</body>
+</html>
